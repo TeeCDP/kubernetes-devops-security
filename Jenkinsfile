@@ -2,6 +2,7 @@ pipeline {
   agent any
 
   stages {
+
     stage('Build Artifact - Maven') {
       steps {
         sh "mvn clean package -DskipTests=true"
@@ -9,15 +10,9 @@ pipeline {
       }
     }
 
-    stage('Unit Tests - JUnit and Jacoco') {
+    stage('Unit Tests - JUnit and JaCoCo') {
       steps {
         sh "mvn test"
-      }
-      post {
-        always {
-          junit 'target/surefire-reports/*.xml'
-          jacoco execPattern: 'target/jacoco.exec'
-        }
       }
     }
 
@@ -25,14 +20,9 @@ pipeline {
       steps {
         sh "mvn org.pitest:pitest-maven:mutationCoverage"
       }
-      post {
-        always {
-          pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-        }
-      }
     }
 
-     stage('SonarQube - SAST') {
+    stage('SonarQube - SAST') {
       steps {
         withSonarQubeEnv('SonarQube') {
           sh "mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://devsecops-tunde.eastus.cloudapp.azure.com:9000"
@@ -49,11 +39,6 @@ pipeline {
       steps {
         sh "mvn dependency-check:check"
       }
-      post {
-        always {
-          dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-        }
-      }
     }
 
     stage('Docker Build and Push') {
@@ -63,9 +48,7 @@ pipeline {
           sh 'docker build -t tundecisco/numeric-app:""$GIT_COMMIT"" .'
           sh 'docker push tundecisco/numeric-app:""$GIT_COMMIT""'
         }
-
       }
-
     }
 
     stage('Kubernetes Deployment - DEV') {
@@ -78,4 +61,22 @@ pipeline {
     }
 
   }
+
+  post {
+    always {
+      junit 'target/surefire-reports/*.xml'
+      jacoco execPattern: 'target/jacoco.exec'
+      pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+      dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+    }
+
+    // success {
+
+    // }
+
+    // failure {
+
+    // }
+  }
+
 }
