@@ -16,4 +16,4 @@
 
 `curl node-service-ip:5000/plusone/99`
 
-This is DevSecOps course. New updt.
+This is DevSecOps course. New updt. Another update.
