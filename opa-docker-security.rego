@@ -96,3 +96,4 @@ deny[msg] {
     val := concat(" ", input[i].Value)
     contains(lower(val), "sudo")
     msg = sprintf("Line %d: Do not use 'sudo' command", [i])
+}
