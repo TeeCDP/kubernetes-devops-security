@@ -98,20 +98,20 @@ pipeline {
     //   }
     // }
 
-    stage('K8S Deployment - DEV') {
+    stage('Integration Tests - DEV') {
       steps {
-        parallel(
-          "Deployment": {
+        script {
+          try {
             withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh "bash k8s-deployment.sh"
+              sh "bash integration-test.sh"
             }
-          },
-          "Rollout Status": {
+          } catch (e) {
             withKubeConfig([credentialsId: 'kubeconfig']) {
-              sh "bash k8s-deployment-rollout-status.sh"
+              sh "kubectl -n default rollout undo deploy ${deploymentName}"
             }
+            throw e
           }
-        )
+        }
       }
     }
 
